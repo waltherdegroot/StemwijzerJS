@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Stemwijzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="http://stemwijzer.dvc-icta.nl/data.js"></script>
+</head>
+<body>
+    <div class="w3-container w3-teal">
+        <h1 >Stemwijzer</h1>
+    </div>
+
+    <div>
+        <h3 id="titleText"></h3>
+        <p id="statementText"></p>
+        
+        <p class="answerButtons">
+            <button class="w3-btn" onclick="answerQuestion(answerEnums.Eens)">Eens</button>
+            <button class="w3-btn" onclick="answerQuestion(answerEnums.Geen)">Geen van beide</button>
+            <button class="w3-btn" onclick="answerQuestion(answerEnums.Oneens)">Oneens</button>
+        </p>
+    </div>
+
+    <div>
+        <button onclick="startQuestions()">START</button>
+    </div>
+    <footer class="w3-container w3-padding-32 w3-light-grey w3-center w3-xlarge">
+        <div class="w3-section">
+
+        </div>
+        <p class="w3-medium">&copy; Walther | Student Davinci College</p>
+    </footer>
+
+    <script>
+        var answerEnums = {
+            Eens : 1,
+            Geen : 2,
+            Oneens : 3,
+            Skipped : null
+        };
+
+        var subjectCount = 0;
+        var answers = [];
+
+        for( i in  parties){
+            console.log(parties[i].name)
+        }  
+
+        function startQuestions(){
+            nextQuestion();
+
+        }
+
+        function nextQuestion(){
+            renderQuestion(subjectCount);
+            subjectCount++;
+        }
+
+        function renderQuestion(id){
+            document.getElementById("titleText").innerHTML = subjects[id].title;
+            document.getElementById("statementText").innerHTML = subjects[id].statement;
+        }
+
+        function answerQuestion(answer){
+            alert(answer);
+            nextQuestion();
+        }
+
+    </script>
+</body>
+</html>
