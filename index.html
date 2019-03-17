@@ -10,33 +10,54 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="http://stemwijzer.dvc-icta.nl/data.js"></script>
 </head>
-<body>
+<body style="background-image: url(https://tweedekamer2017.stemwijzer.nl/public/gfx/background.jpg); background-size: cover" class="w3-content">
+<div class="w3-panel">
     <div class="w3-container w3-teal">
         <h1 >Stemwijzer</h1>
     </div>
 
-    <div class="w3-container w3-center">
+    <div class="w3-container w3-center w3-white">
         <div>
-            <h3 id="titleText"></h3>
-            <p id="statementText"></p>
+            <div style="min-height: 300px;">
+                <h3 id="titleText"></h3>
+                <p id="statementText"></p>
+                
+                <div id="tableHeader" class="w3-hide">
+                    <button class="w3-third w3-button w3-black" onclick="sortTable('normal')">Normale sorteering</button>
+                    <button class="w3-third w3-button w3-black" onclick="sortTable('size')">Alleen grote partijen</button>
+                    <button class="w3-third w3-button w3-black" onclick="sortTable('secular')">Alleen seculiere partijen</button>
+                </div>
+                <table id="resultTable" class="w3-hide w3-table-all">
+                    <thead>
+                        <th>Keuze</th>
+                        <th>Partij naam</th>
+                        <th>Aantal keer gematched</th>
+                    </thead>
+                    <tbody>
+    
+                    </tbody>
+                </table>
+            </div>
+
+            <button id="markBtn" class="w3-hide w3-button w3-pale-blue" style="width: -webkit-fill-available; margin-bottom: 15px;" onclick="markAnswer()"></button>
             
-            <div>
+            <div>       
                 <div class="w3-quarter">
-                    <button id="previousBtn" class="w3-btn w3-hide w3-rest" onclick="previousQuestion()">Terug</button>
+                        <button id="previousBtn" class="w3-button w3-hide w3-rest" style="width: -webkit-fill-available;" onclick="previousQuestion()">Terug</button>
                 </div>
-                <div class="answerButtons w3-hide w3-half">
-                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Eens.Value)">Eens</button>
-                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Geen.Value)">Geen van beide</button>
-                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Oneens.Value)">Oneens</button>
+                <div id="answerButtons" class=" w3-hide w3-half">
+                    <button class="w3-button w3-green w3-third" onclick="answerQuestion(answerEnums.Eens.Value)">Eens</button>
+                    <button class="w3-button w3-green w3-third" onclick="answerQuestion(answerEnums.Geen.Value)">Geen van beide</button>
+                    <button class="w3-button w3-green w3-third" onclick="answerQuestion(answerEnums.Oneens.Value)">Oneens</button>
                 </div>
                 <div class="w3-quarter">
-                    <button class="answerButtons w3-btn w3-rest w3-hide" onclick="answerQuestion(answerEnums.Skipped.Value)">Overslaan -></button>
+                    <button id="skipBtn" class=" w3-button w3-rest w3-hide" style="width: -webkit-fill-available;" onclick="answerQuestion(answerEnums.Skipped.Value)">Overslaan -></button>
                 </div>
             </div>
         </div>
     
         <div>
-            <button id="startBtn" class="w3-btn w3-green" onclick="startQuestions()">START</button>
+            <button id="startBtn" class="w3-btn w3-green" style="width: -webkit-fill-available;" onclick="startQuestions()">START</button>
         </div>
     </div>
 
@@ -46,6 +67,8 @@
         </div>
         <p class="w3-medium">&copy; Walther | Student Davinci College</p>
     </footer>
+            
+</div>
 
     <script>
         var answerEnums = {
@@ -72,25 +95,22 @@
         var partiesDictionary = [];
 
         for(var partyNum in parties){
-            partiesDictionary[partyNum] = {party: parties[partyNum].name, longName : parties[partyNum].long, MatchCount : 0};
+            partiesDictionary[partyNum] = {party: parties[partyNum].name, longName : parties[partyNum].long, MatchCount : 0, size: parties[partyNum].size, secular: parties[partyNum].secular};
         }
 
         var subjectCount = 0;
         var answers = [];
+        var weightedAnswers = [];
+        var weighted = false;
 
         function startQuestions(){
             renderQuestion();
 
-            console.log(partiesDictionary);
-
             document.getElementById("startBtn").classList.add("w3-hide");
             document.getElementById("previousBtn").classList.remove("w3-hide");
-
-            var buttons = document.getElementsByClassName("answerButtons");
-
-            for(var i in buttons){
-                buttons[i].classList.remove("w3-hide");
-            }
+            document.getElementById("skipBtn").classList.remove("w3-hide");
+            document.getElementById("answerButtons").classList.remove("w3-hide");
+            document.getElementById("markBtn").classList.remove("w3-hide");
         }
 
         function previousQuestion(){
@@ -115,7 +135,33 @@
             calculateMatch();
         }
 
+        function markAnswer(){
+            if(!weighted){
+                weightedAnswers.push(subjectCount);
+                weighted = true;
+
+                document.getElementById("markBtn").innerHTML = "Markering ongedaan maken";
+                document.getElementById("markBtn").classList.add('w3-pale-red');
+                document.getElementById("markBtn").classList.remove('w3-pale-blue');
+
+                return;
+            }
+
+            document.getElementById("markBtn").innerHTML = "Markeer als extra belangrijk";
+            document.getElementById("markBtn").classList.add('w3-pale-blue');
+            document.getElementById("markBtn").classList.remove('w3-pale-red');
+            
+            weightedAnswers.pop();
+            weighted = false;
+        }
+
         function renderQuestion(){
+            weighted = false;
+
+            document.getElementById("markBtn").innerHTML = "Markeer als extra belangrijk";
+            document.getElementById("markBtn").classList.add('w3-pale-blue');
+            document.getElementById("markBtn").classList.remove('w3-pale-red');
+
             if(subjectCount <= 0){
                 document.getElementById("previousBtn").classList.add("w3-hide");
             }
@@ -156,6 +202,11 @@
 
                                 // in the dictionary up the match count for that party with 1
                                 partiesDictionary[dict].MatchCount += 1;
+                                for(var i in weightedAnswers){
+                                    if(answeredNum == weightedAnswers[i]){
+                                        partiesDictionary[dict].MatchCount += 1;
+                                    }
+                                }
 
                             }
                         }
@@ -164,11 +215,113 @@
             }
 
             partiesDictionary.sort(compare);
+          
+            document.getElementById("titleText").innerHTML = "Jouw beste keuze is " + partiesDictionary[0].party;
+            
+            document.getElementById("statementText").innerHTML = "";
 
-            console.log(partiesDictionary);
+            var tableRef = document.getElementById('resultTable').getElementsByTagName('tbody')[0];
 
-            for(var test in partiesDictionary){
-                console.log(partiesDictionary[test].party + " matchcount: " + partiesDictionary[test].MatchCount);
+            var count = 1;
+
+            for (var i in partiesDictionary){
+
+                var row = tableRef.insertRow();
+                var Cell1 = row.insertCell(0);
+                var Cell2 = row.insertCell(1);
+                var Cell3 = row.insertCell(2);
+
+                Cell1.innerHTML = count;
+                Cell2.innerHTML = partiesDictionary[i].party;
+                Cell3.innerHTML = partiesDictionary[i].MatchCount;
+
+                count++;
+            }
+
+            document.getElementById('resultTable').classList.remove('w3-hide');
+            document.getElementById('tableHeader').classList.remove('w3-hide');
+            document.getElementById("previousBtn").classList.add("w3-hide");
+            document.getElementById("skipBtn").classList.add("w3-hide");
+            document.getElementById("answerButtons").classList.add("w3-hide");
+            document.getElementById("markBtn").classList.add("w3-hide");
+        }
+
+        function sortTable(sorting){
+            var tableRef = document.getElementById('resultTable').getElementsByTagName('tbody')[0];
+
+            tableRef.innerHTML = null;
+
+            switch(sorting){
+                case 'normal':
+                    var count = 1
+                    for (var i in partiesDictionary){
+
+                        if (count == 1){
+                            document.getElementById("titleText").innerHTML = "Jouw beste keuze is " + partiesDictionary[i].party;
+                        }
+
+                        var row = tableRef.insertRow();
+                        var Cell1 = row.insertCell(0);
+                        var Cell2 = row.insertCell(1);
+                        var Cell3 = row.insertCell(2);
+
+                        Cell1.innerHTML = count;
+                        Cell2.innerHTML = partiesDictionary[i].party;
+                        Cell3.innerHTML = partiesDictionary[i].MatchCount;
+
+                        count++;
+                    }
+                    break;
+                
+                case 'size':
+                    
+                    var count = 1
+                    for (var i in partiesDictionary){
+                        if(partiesDictionary[i].size != 0){
+
+                            if (count == 1){
+                                document.getElementById("titleText").innerHTML = "Jouw beste keuze is " + partiesDictionary[i].party;
+                            }
+
+                            var row = tableRef.insertRow();
+                            var Cell1 = row.insertCell(0);
+                            var Cell2 = row.insertCell(1);
+                            var Cell3 = row.insertCell(2);
+
+                            Cell1.innerHTML = count;
+                            Cell2.innerHTML = partiesDictionary[i].party;
+                            Cell3.innerHTML = partiesDictionary[i].MatchCount;
+
+                            count++;
+                        }
+                    }
+
+                    break;
+
+                case 'secular': 
+
+                    var count = 1
+                    for (var i in partiesDictionary){
+                        if(partiesDictionary[i].secular){
+
+                            if (count == 1){
+                                document.getElementById("titleText").innerHTML = "Jouw beste keuze is " + partiesDictionary[i].party;
+                            }
+
+                            var row = tableRef.insertRow();
+                            var Cell1 = row.insertCell(0);
+                            var Cell2 = row.insertCell(1);
+                            var Cell3 = row.insertCell(2);
+
+                            Cell1.innerHTML = count;
+                            Cell2.innerHTML = partiesDictionary[i].party;
+                            Cell3.innerHTML = partiesDictionary[i].MatchCount;
+
+                            count++;
+                        }
+                    }
+
+                    break;
             }
         }
 
