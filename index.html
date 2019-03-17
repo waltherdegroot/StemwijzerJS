@@ -15,20 +15,31 @@
         <h1 >Stemwijzer</h1>
     </div>
 
-    <div>
-        <h3 id="titleText"></h3>
-        <p id="statementText"></p>
-        
-        <p class="answerButtons">
-            <button class="w3-btn" onclick="answerQuestion(answerEnums.Eens)">Eens</button>
-            <button class="w3-btn" onclick="answerQuestion(answerEnums.Geen)">Geen van beide</button>
-            <button class="w3-btn" onclick="answerQuestion(answerEnums.Oneens)">Oneens</button>
-        </p>
+    <div class="w3-container w3-center">
+        <div>
+            <h3 id="titleText"></h3>
+            <p id="statementText"></p>
+            
+            <div>
+                <div class="w3-quarter">
+                    <button id="previousBtn" class="w3-btn w3-hide w3-rest" onclick="previousQuestion()">Terug</button>
+                </div>
+                <div class="answerButtons w3-hide w3-half">
+                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Eens.Value)">Eens</button>
+                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Geen.Value)">Geen van beide</button>
+                    <button class="w3-btn w3-third" onclick="answerQuestion(answerEnums.Oneens.Value)">Oneens</button>
+                </div>
+                <div class="w3-quarter">
+                    <button class="answerButtons w3-btn w3-rest w3-hide" onclick="answerQuestion(answerEnums.Skipped.Value)">Overslaan -></button>
+                </div>
+            </div>
+        </div>
+    
+        <div>
+            <button id="startBtn" class="w3-btn w3-green" onclick="startQuestions()">START</button>
+        </div>
     </div>
 
-    <div>
-        <button onclick="startQuestions()">START</button>
-    </div>
     <footer class="w3-container w3-padding-32 w3-light-grey w3-center w3-xlarge">
         <div class="w3-section">
 
@@ -38,37 +49,127 @@
 
     <script>
         var answerEnums = {
-            Eens : 1,
-            Geen : 2,
-            Oneens : 3,
-            Skipped : null
+            Eens : {
+                Key : 1,
+                Value : "pro"
+            },
+            Geen : {
+                Key : 2,
+                Value : "ambivalent"
+            },
+            Oneens : {
+                Key : 0,
+                Value : "contra"
+            },
+
+            Skipped : {
+                Key : "skipped",
+                Value : "ambivalent"
+                }
+
         };
+
+        var partiesDictionary = [];
+
+        for(var partyNum in parties){
+            partiesDictionary[partyNum] = {party: parties[partyNum].name, longName : parties[partyNum].long, MatchCount : 0};
+        }
 
         var subjectCount = 0;
         var answers = [];
 
-        for( i in  parties){
-            console.log(parties[i].name)
-        }  
-
         function startQuestions(){
-            nextQuestion();
+            renderQuestion();
 
+            console.log(partiesDictionary);
+
+            document.getElementById("startBtn").classList.add("w3-hide");
+            document.getElementById("previousBtn").classList.remove("w3-hide");
+
+            var buttons = document.getElementsByClassName("answerButtons");
+
+            for(var i in buttons){
+                buttons[i].classList.remove("w3-hide");
+            }
         }
 
-        function nextQuestion(){
+        function previousQuestion(){
+            subjectCount--;
+
+            answers.pop();
+
             renderQuestion(subjectCount);
-            subjectCount++;
-        }
-
-        function renderQuestion(id){
-            document.getElementById("titleText").innerHTML = subjects[id].title;
-            document.getElementById("statementText").innerHTML = subjects[id].statement;
         }
 
         function answerQuestion(answer){
-            alert(answer);
-            nextQuestion();
+
+            answers.push(answer);
+
+            subjectCount++;
+
+            if(subjectCount < subjects.length){
+                renderQuestion();
+                return;
+            }
+
+            calculateMatch();
+        }
+
+        function renderQuestion(){
+            if(subjectCount <= 0){
+                document.getElementById("previousBtn").classList.add("w3-hide");
+            }
+            else{   
+                document.getElementById("previousBtn").classList.remove("w3-hide");
+            }
+
+            if(subjectCount < subjects.length){
+                document.getElementById("titleText").innerHTML = subjects[subjectCount].title;
+
+                document.getElementById("statementText").innerHTML = subjects[subjectCount].statement;
+            }
+        }
+
+        function compare(a,b) {
+            if (a.MatchCount < b.MatchCount)
+                return 1;
+            if (a.MatchCount > b.MatchCount)
+                return -1;
+            return 0;
+        }
+
+        function calculateMatch(){
+            // Loop through every answered item
+            for(var answeredNum in answers){
+
+                // Loop through every party in the answered item from subject
+                for(var party in subjects[answeredNum].parties){
+
+                    // Check if the position from a party equals the position that was answered
+                    if(subjects[answeredNum].parties[party].position == answers[answeredNum]){
+
+                        // Loop through the dictionary of all parties
+                        for(var dict in partiesDictionary){
+
+                            // Check if the dictionary's currenct selected party equals the matching party
+                            if(partiesDictionary[dict].party == subjects[answeredNum].parties[party].name){
+
+                                // in the dictionary up the match count for that party with 1
+                                partiesDictionary[dict].MatchCount += 1;
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            partiesDictionary.sort(compare);
+
+            console.log(partiesDictionary);
+
+            for(var test in partiesDictionary){
+                console.log(partiesDictionary[test].party + " matchcount: " + partiesDictionary[test].MatchCount);
+            }
         }
 
     </script>
